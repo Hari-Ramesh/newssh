@@ -1,0 +1,30 @@
+---
+- name: Tomcat server installationt from ansible server to ansible node server
+  hosts: all
+  become: true
+  tasks:
+  - name: Upgrade all packages
+    ansible.builtin.yum:
+      name: '*'
+      state: latest
+  - name: Install latest java from yum repo
+    ansible.builtin.yum:
+        name: java
+        state: present
+  - name: Download tomcat version 9 and unzip ZIP file
+    unarchive:
+      remote_src: yes
+      src: https://dlcdn.apache.org/tomcat/tomcat-9/v9.0.83/bin/apache-tomcat-9.0.83.zip
+      dest: /home/ec2-user/
+      mode: '0777'
+  - name: Copy apache tomcat dir to opt dir
+    shell: cp -r apache-tomcat-9.0.83 /opt/    
+  - name: Start tomcat service
+    shell: cd /opt/apache-tomcat-9.0.83/bin/ ./startup.sh
+  - name: Check if Tomcat is running
+    shell: ps -ef | grep tomcat
+    register: tomcat_status
+  - name: Displaying tomcat running status
+    debug:
+      msg: "{{tomcat_status}}"
+    
